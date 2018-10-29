@@ -2,11 +2,12 @@ package pipeline
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"os/exec"
 )
 
-func Output(commands ...[]string) ([]byte, error) {
+func OutputStderr(stdErr io.Writer, commands ...[]string) ([]byte, error) {
 	cmds := make([]*exec.Cmd, len(commands))
 	var err error
 
@@ -17,7 +18,7 @@ func Output(commands ...[]string) ([]byte, error) {
 				return nil, err
 			}
 		}
-		cmds[i].Stderr = os.Stderr
+		cmds[i].Stderr = stdErr
 	}
 	var out bytes.Buffer
 	cmds[len(cmds)-1].Stdout = &out
@@ -32,4 +33,8 @@ func Output(commands ...[]string) ([]byte, error) {
 		}
 	}
 	return out.Bytes(), nil
+}
+
+func Output(commands ...[]string) ([]byte, error) {
+	return OutputStderr(os.Stderr, commands...)
 }
